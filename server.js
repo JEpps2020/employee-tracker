@@ -19,10 +19,48 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId + "\n");
-//   runSearch();
+  runMenu();
 });
 
-// function runSearch() {
+function runMenu() {
+  inquirer
+    .prompt({
+      name: "action",
+      type: "list",
+      message: "What would you like to do?",
+      choices: ["View", "Add", "Update", "Exit"]
+    })
+    .then(function(answer) {
+      switch (answer.action) {
+      case "View":
+        console.log("You chose view")
+        runMenu();
+        // artistSearch();
+        break;
+
+      case "Add":
+        console.log("You chose add")
+        runMenu();
+        // multiSearch();
+        break;
+
+      case "Update":
+        console.log("You chose update")
+        runMenu();
+        // rangeSearch();
+        break;
+
+      case "Exit":
+          default:
+              connection.end();
+        // rangeSearch();
+        break;  
+
+      }
+    });
+}
+
+// function runMenu() {
 //   inquirer
 //     .prompt({
 //       name: "action",
