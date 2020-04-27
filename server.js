@@ -1,6 +1,8 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var {prompt } =require("inquirer");
 const cTable = require("console.table");
+var roleArray=[];
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -34,13 +36,13 @@ function runMenu() {
       switch (answer.action) {
       case "View":
         console.log("You chose view")
-        runMenu();
+        runView();
         // artistSearch();
         break;
 
       case "Add":
         console.log("You chose add")
-        runMenu();
+        addAll();
         // multiSearch();
         break;
 
@@ -59,6 +61,247 @@ function runMenu() {
       }
     });
 }
+
+function runView() {
+  inquirer
+    .prompt({
+      name: "action",
+      type: "list",
+      message: "What would you like to do?",
+      choices: ["View Departments","View Roles","View Employees","Exit"]
+  })
+    .then(function(answer) {
+       switch (answer.action) {
+          case "View Departments":
+              var query = "SELECT * FROM department ORDER BY id";
+              connection.query(query, function(err, res) {
+                  console.log("                              ");
+                  console.log("--- BEGINNING OF DEPARTMENTS ---");
+                  console.log("                              ");
+                  console.table(res);
+                  console.log("                              ");
+                  console.log("------ END OF DEPARTMENTS ------");
+                  console.log("                              ");
+                  runView();
+              });
+              break;
+          case "View Roles":
+              console.log("You chose View Roles");
+              var query = "SELECT * FROM role ORDER BY id";
+              connection.query(query, function(err, res) {
+                  console.log("                          ");
+                  console.log("------------- BEGINNING OF ROLES -----------");
+                  console.log("                          ");
+                  console.table(res);
+                  console.log("                          ");
+                  console.log("---------------- END OF ROLES --------------");
+                  console.log("                          ");
+                  runView();
+              });
+              break;
+          case "View Employees":
+              console.log("You chose View Employees");
+              var query = "SELECT * FROM employee ORDER BY id";
+              connection.query(query, function(err, res) {
+                  console.table(res);
+                  runView();
+              });
+              break;
+          case "Exit":
+          default:
+              runMenu();
+              break;
+      }
+  });
+} 
+
+function addAll() {
+  inquirer
+    .prompt({
+      name: "action",
+      type: "list",
+      message: "What would you like to add?",
+      choices: ["Add Department","Add Role","Add Employee","Exit"]
+  })
+    .then(function(answer) {
+       switch (answer.action) {
+          case "Add Department":
+            addDepartment();
+            
+              break;
+          case "Add Role":
+            var query = "SELECT * FROM tracker_db.role";
+            connection.query(query, function(err, res) {
+            //console.log(res);
+            console.log("inside add role");
+            for(var i=0;i<res.length;i++){
+              roleArray.push(res[i].department_id);
+            }
+            console.log("role array:"+ roleArray);
+            addRole(roleArray);
+            });
+            
+            
+              break;
+          case "Add Employee":
+              console.log("You chose Add Employees");
+              var query = "SELECT * FROM employee ORDER BY id";
+              connection.query(query, function(err, res) {
+                  console.table(res);
+                  runView();
+              });
+              break;
+          case "Exit":
+          default:
+              runMenu();
+              break;
+      }
+  });
+} 
+
+function addDepartment(){
+  console.log("inside add department");
+
+  //ask q for inquire
+  inquirer
+  .prompt({
+    name: "departmentname",
+    type: "input",
+    message: "What is your department name?",
+}).then(function(answer){
+  console.log(answer.departmentname);
+
+
+
+            //communiate to db to add to do
+
+            //tell user it is addedtable_name
+              //var query = "INSERT INTO department (name) VALUES ("+answer.departmentname+");"
+              //console.log(query);
+              connection.query(
+                "INSERT INTO department SET ?",
+                {
+                  name: answer.departmentname,
+                },
+                function(err, res) {
+                  if (err) throw err;
+                  console.log(res.affectedRows + " department inserted!\n");
+                  // Call updateProduct AFTER the INSERT completes
+                  console.log("check db");
+                }
+              )
+            })
+}
+
+function addRole(roleArray) {
+
+
+  //ask q for inquire
+  
+  inquirer
+  .prompt(
+    {
+      type: "input",
+      name: "title",
+      message: "What is your title?"
+    },
+    
+    {
+      type: "input",
+      name: "salary",
+      message: "What is your desired salary?"
+    },
+
+    {
+    name: "departmentrole",
+    type: "list",
+    choices: roleArray,
+    message: "What id would you associate with the department?",
+  }
+
+).then(function(answer){
+  console.log(answer.departmentrole);
+  console.log(answer.title);
+  console.log(answer.salary);
+
+            //communiate to db to add to do
+
+            //tell user it is addedtable_name
+              // var query = "INSERT INTO department (name) VALUES ("+answer.departmentname+");"
+              // console.log(query);
+              // connection.query(
+              //   "INSERT INTO role SET ?",
+              //   {
+              //     name: answer.departmentrole,
+              //   },
+              //   function(err, res) {
+              //     if (err) throw err;
+              //     console.log(res.affectedRows + " role inserted!\n");
+              //     // Call updateProduct AFTER the INSERT completes
+              //     console.log("check db");
+              //   }
+              // )
+            })
+}
+
+// function runView() {
+//     inquirer
+//       .prompt({
+//         name: "action",
+//         type: "list",
+//         message: "What would you like to do?",
+//         choices: ["View Departments", "View Roles", "View Employees", "Exit"]
+//       })
+//            .then(function(answer) {
+//             switch (answer.action) {
+//             case "View Departments":
+//                await viewDepartment();
+//                 runMenu();
+
+
+         
+//           break;
+  
+//         case "View Roles":
+//           console.log("You chose view roles")
+//           runView();
+//           break;
+  
+//         case "View Employees":
+//           console.log("You chose view employees")
+//           runView();
+//           break;
+  
+//         case "Exit":
+//             default:
+//             runMenu();
+//           break;  
+  
+//         }
+//       });
+//   }
+
+//   async function viewDepartment(){
+//     console.log("You chose View Departments");
+//     var query = "SELECT * FROM department ORDER BY id";
+//     connection.query(query, function(err, res) {  
+//         //console.table(['id','name'],res);
+//         return res;
+//     });
+
+//   }
+
+  // function selectDept() {
+//  
+//       var query = "SELECT * FROM, department ORDER BY id"
+//       connection.query(query, { artist: answer.artist }, function(err, res) {
+//         for (var i = 0; i < res.length; i++) {
+//           console.log("Position: " + res[i].position + " || Song: " + res[i].song + " || Year: " + res[i].year);
+//         }
+//         runSearch();
+//       });
+//     });
+// }
 
 // function runMenu() {
 //   inquirer
