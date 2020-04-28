@@ -22,7 +22,73 @@ connection.connect(function(err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId + "\n");
   runMenu();
+
+ 
+
 });
+
+// async function init() {
+
+//   try {
+
+//     //const allRoleArray = await showAllRoles();
+//     addRole()
+//     // .then(function(res){
+//     //   //once we get data from role we need to add this res data to mysql
+//     // });
+
+//   }
+//   catch (err) {
+//       console.log(err);
+//     }
+//   }
+
+
+function addRole() {
+  var depts = [];
+    var query = `SELECT name FROM DEPARTMENT ORDER BY id`;
+    connection.query(query, function(err, res) 
+    {  
+        for (var i = 0; i < res.length; i++) 
+        {  
+            depts.push(res[i].name); 
+        }
+        inquirer.prompt([
+        {
+            name: "dept",
+            type: "list",
+            message: "What department would you like to add the role to?",
+            choices: depts
+        },
+        {
+            name: "roleName",
+            type: "input",
+            message: "What role would like to add?"
+        },
+        {
+            message: "What is the salary for this role?",
+            type: "input",
+            name: "salary"
+        }
+        ])
+        .then(function({dept,roleName,salary}) 
+        {       
+            var query = `INSERT INTO ROLE (title, salary, department_id) VALUES ("${roleName}",${salary},`;
+                query += `(select id from department where name = "${dept}"));`
+                console.log(query);
+            connection.query(query, function(err, res) 
+            {
+                console.log("                                                                ");
+                console.log("----------------------------------------------------------------");
+                console.log(`        Role of ${roleName} has been added to database.         `);
+                console.log(`With a salary of ${salary} to the following department: ${dept}`);
+                console.log("----------------------------------------------------------------");
+                console.log("                                                                ");
+                runMenu();
+            });
+        });
+    });
+}
 
 function runMenu() {
   inquirer
@@ -30,7 +96,7 @@ function runMenu() {
       name: "action",
       type: "list",
       message: "What would you like to do?",
-      choices: ["View", "Add", "Update", "Exit"]
+      choices: ["View", "Add Department", "Add Role", "Add Employee", "Update", "Exit"]
     })
     .then(function(answer) {
       switch (answer.action) {
@@ -40,11 +106,16 @@ function runMenu() {
         // artistSearch();
         break;
 
-      case "Add":
-        console.log("You chose add")
-        addAll();
-        // multiSearch();
-        break;
+      case "Add Department":
+      console.log("You chose add departments")
+      addDepartment();
+      break;
+
+        case "Add Role":
+          console.log("You chose add")
+          addRole();
+          // multiSearch();
+          break;
 
       case "Update":
         console.log("You chose update")
@@ -115,49 +186,40 @@ function runView() {
   });
 } 
 
-function addAll() {
-  inquirer
-    .prompt({
-      name: "action",
-      type: "list",
-      message: "What would you like to add?",
-      choices: ["Add Department","Add Role","Add Employee","Exit"]
-  })
-    .then(function(answer) {
-       switch (answer.action) {
-          case "Add Department":
-            addDepartment();
+// function addAll() {
+//   inquirer
+//     .prompt({
+//       name: "action",
+//       type: "list",
+//       message: "What would you like to add?",
+//       choices: ["Add Department","Add Role","Add Employee","Exit"]
+//   })
+//     .then(function(answer) {
+//        switch (answer.action) {
+//           case "Add Department":
+//             addDepartment();
             
-              break;
-          case "Add Role":
-            var query = "SELECT * FROM tracker_db.role";
-            connection.query(query, function(err, res) {
-            //console.log(res);
-            console.log("inside add role");
-            for(var i=0;i<res.length;i++){
-              roleArray.push(res[i].department_id);
-            }
-            console.log("role array:"+ roleArray);
-            addRole(roleArray);
-            });
+//               break;
+//           case "Add Role":
             
+//             init();
             
-              break;
-          case "Add Employee":
-              console.log("You chose Add Employees");
-              var query = "SELECT * FROM employee ORDER BY id";
-              connection.query(query, function(err, res) {
-                  console.table(res);
-                  runView();
-              });
-              break;
-          case "Exit":
-          default:
-              runMenu();
-              break;
-      }
-  });
-} 
+//               break;
+//           case "Add Employee":
+//               console.log("You chose Add Employees");
+//               var query = "SELECT * FROM employee ORDER BY id";
+//               connection.query(query, function(err, res) {
+//                   console.table(res);
+//                   runView();
+//               });
+//               break;
+//           case "Exit":
+//           default:
+//               runMenu();
+//               break;
+//       }
+//   });
+// } 
 
 function addDepartment(){
   console.log("inside add department");
@@ -188,61 +250,65 @@ function addDepartment(){
                   console.log(res.affectedRows + " department inserted!\n");
                   // Call updateProduct AFTER the INSERT completes
                   console.log("check db");
+                  runMenu();
                 }
               )
             })
 }
 
-function addRole(roleArray) {
+// async function addRole(roleArray) {
 
+//   const depts = await roleArray;
 
-  //ask q for inquire
+//   console.log(depts);
+
+//   //ask q for inquire
   
-  inquirer
-  .prompt(
-    {
-      type: "input",
-      name: "title",
-      message: "What is your title?"
-    },
+//   inquirer
+//   .prompt(
+//     {
+//       type: "input",
+//       name: "title",
+//       message: "What is your title?"
+//     },
     
-    {
-      type: "input",
-      name: "salary",
-      message: "What is your desired salary?"
-    },
+//     {
+//       type: "input",
+//       name: "salary",
+//       message: "What is your desired salary?"
+//     },
 
-    {
-    name: "departmentrole",
-    type: "list",
-    choices: roleArray,
-    message: "What id would you associate with the department?",
-  }
+//     {
+//     name: "departmentrole",
+//     type: "list",
+//     choices: depts,
+//     message: "What id would you associate with the department?",
+//   }
 
-).then(function(answer){
-  console.log(answer.departmentrole);
-  console.log(answer.title);
-  console.log(answer.salary);
+// ).then(function(answer){
+//   console.log(answer.departmentrole);
+//   console.log(answer.title);
+//   console.log(answer.salary);
 
-            //communiate to db to add to do
+//             //communiate to db to add to do
 
-            //tell user it is addedtable_name
-              // var query = "INSERT INTO department (name) VALUES ("+answer.departmentname+");"
-              // console.log(query);
-              // connection.query(
-              //   "INSERT INTO role SET ?",
-              //   {
-              //     name: answer.departmentrole,
-              //   },
-              //   function(err, res) {
-              //     if (err) throw err;
-              //     console.log(res.affectedRows + " role inserted!\n");
-              //     // Call updateProduct AFTER the INSERT completes
-              //     console.log("check db");
-              //   }
-              // )
-            })
-}
+//             //tell user it is addedtable_name
+//               // var query = "INSERT INTO department (name) VALUES ("+answer.departmentname+");"
+//               // console.log(query);
+//               // connection.query(
+//               //   "INSERT INTO role SET ?",
+//               //   {
+//               //     name: answer.departmentrole,
+//               //   },
+//               //   function(err, res) {
+//               //     if (err) throw err;
+//               //     console.log(res.affectedRows + " role inserted!\n");
+//               //     // Call updateProduct AFTER the INSERT completes
+//               //     console.log("check db");
+//               //   }
+//               // )
+//             })
+// }
 
 // function runView() {
 //     inquirer
